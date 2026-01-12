@@ -1,0 +1,504 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+@font-face {
+    font-family: 'Brat';
+    src: url('greensquare.ttf') format('truetype');
+}
+
+
+:root {
+    --bg-dark: #1e1e1e;
+    --bg-darker: #181818;
+    --bg-side: #252526;
+    --bg-activity: #333333;
+    --bg-panel: #1e1e1e;
+    --border: #2b2b2b;
+    --accent: #007acc;
+    --accent-hover: #0098ff;
+    --text-primary: #cccccc;
+    --text-secondary: #858585;
+    --status-bg: #007acc;
+    --status-text: #ffffff;
+    --font-ui: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+/* WORKBENCH LAYOUT */
+.workbench {
+    display: grid;
+    grid-template-columns: 48px 250px 1fr;
+    grid-template-rows: 1fr;
+    /* Bottom is status bar */
+    height: 100vh;
+    width: 100vw;
+}
+
+/* 1. ACTIVITY BAR */
+.activity-bar {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    /* Span full height minus status bar if we wanted, but let's stick to 1 for now and absolute status bar? No grid is cleaner */
+    grid-row: 1;
+    background-color: var(--bg-activity);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    border-right: 1px solid var(--border);
+}
+
+.activity-item {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    border-left: 2px solid transparent;
+}
+
+.activity-item:hover {
+    opacity: 1;
+}
+
+.activity-item.active {
+    opacity: 1;
+    border-left-color: var(--text-primary);
+}
+
+.activity-item ion-icon {
+    font-size: 24px;
+    color: var(--text-primary);
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+/* 2. SIDEBAR */
+.sidebar {
+    grid-column: 2;
+    grid-row: 1;
+    background-color: var(--bg-side);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-actions {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+}
+
+.sidebar-actions button {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.primary-btn {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+}
+
+.primary-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.secondary-btn {
+    background-color: #d11;
+    color: white;
+    border: none;
+}
+
+.secondary-btn:hover {
+    background-color: #b00;
+}
+
+.sidebar-view {
+    display: none;
+    height: 100%;
+}
+
+.sidebar-view.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.sidebar-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Slight highlight */
+    padding: 4px 5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-primary);
+    border-top: 1px solid var(--border);
+}
+
+.section-title ion-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.section-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Inputs */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+select,
+input[type="text"],
+input[type="number"],
+textarea,
+button {
+    background-color: #3c3c3c;
+    border: 1px solid #3c3c3c;
+    color: #cccccc;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-family: var(--font-ui);
+    outline: 1px solid transparent;
+    border-radius: 2px;
+}
+
+select:focus,
+input:focus,
+textarea:focus,
+button:focus {
+    outline-color: var(--accent);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: var(--font-mono);
+}
+
+/* Custom File Input Styling */
+input[type="file"] {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background-color: #3c3c3c;
+    border: 1px solid #3c3c3c;
+    color: #cccccc;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 2px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 15px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+/* 3. EDITOR AREA */
+.editor-area {
+    grid-column: 3;
+    grid-row: 1;
+    background-color: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    /* For panel absolute positioning if needed, or grid */
+}
+
+/* We need the panel to split the editor area vertically usually, or overlay. 
+   In actual VS Code, the panel is below the editor in the same column.
+   Let's modify the grid to have two rows for the content area? 
+   Or just flex column the third column. */
+.editor-area {
+    display: grid;
+    grid-template-rows: 35px 1fr;
+    /* Tab bar, Canvas */
+}
+
+.tab-bar {
+    background-color: var(--bg-dark);
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    /* Optional */
+}
+
+.tab {
+    background-color: var(--bg-dark);
+    color: var(--text-secondary);
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    min-width: 120px;
+    height: 35px;
+}
+
+.tab.active {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    border-top: 1px solid var(--accent);
+    /* Simplified active tab indicator */
+}
+
+.tab .close {
+    margin-left: auto;
+    font-size: 14px;
+    opacity: 0;
+}
+
+.tab:hover .close {
+    opacity: 1;
+}
+
+.canvas-container {
+    background-color: #111;
+    /* Darker purely for canvas background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.canvas-wrapper {
+    position: relative;
+    /* Simulate a phone screen if desired or expand */
+    /* width: 450px; 
+    height: 800px; */
+    /* Let's make it responsive to fit */
+    height: 95%;
+    aspect-ratio: 9/16;
+    border: 1px solid #333;
+    background: black;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#trail-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 5. STATUS BAR */
+.status-bar {
+    grid-column: 1 / span 3;
+    grid-row: 2;
+    background-color: var(--status-bg);
+    color: var(--status-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 11px;
+    cursor: default;
+    z-index: 100;
+}
+
+.status-left,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 100%;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.status-item.button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    padding: 0 5px;
+    margin: 0 -5px;
+    /* Offset padding */
+}
+
+/* UTILS */
+.hidden {
+    display: none !important;
+}
+
+#processing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-mono);
+}
+
+/* Range Slider override */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: #444;
+    outline: none;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+    .workbench {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr 22px;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .activity-bar {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: row;
+        width: 100%;
+        height: 50px;
+        padding-top: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        justify-content: center;
+    }
+
+    .activity-item {
+        width: 60px;
+        height: 50px;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+    }
+
+    .activity-item.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--text-primary);
+    }
+
+    .sidebar {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .editor-area {
+        grid-column: 1;
+        grid-row: 3;
+        height: 600px;
+    }
+
+    .canvas-wrapper {
+        width: 90%;
+        height: auto;
+        aspect-ratio: 9/16;
+    }
+
+    .status-bar {
+        grid-column: 1;
+        grid-row: 4;
+    }
+}

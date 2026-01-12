@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antechamber</title>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Ionicons for VS Code-like icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body>
+    <div class="workbench">
+        <!-- 1. ACTIVITY BAR (Leftmost) -->
+        <div class="activity-bar">
+            <div class="activity-item active" data-target="explorer-view">
+                <ion-icon name="copy-outline"></ion-icon>
+            </div>
+            <div class="activity-item" data-target="text-view">
+                <ion-icon name="text-outline"></ion-icon>
+            </div>
+            <div class="spacer"></div>
+            <div class="activity-item">
+                <ion-icon name="person-circle-outline"></ion-icon>
+            </div>
+        </div>
+
+        <!-- 2. SIDEBAR (Collapsible) -->
+        <div class="sidebar">
+            <!-- GLOBAL SIDEBAR ACTIONS -->
+            <div class="sidebar-actions">
+                <button id="startBtn" class="primary-btn">
+                    <ion-icon name="play"></ion-icon> RUN
+                </button>
+                <button id="stopBtn" class="secondary-btn hidden">
+                    <ion-icon name="square"></ion-icon> STOP
+                </button>
+            </div>
+
+            <!-- EXPLORER VIEW -->
+            <div id="explorer-view" class="sidebar-view active">
+                <div class="sidebar-header">
+                    <span>EXPLORER: PROJECT</span>
+                    <ion-icon name="ellipsis-horizontal"></ion-icon>
+                </div>
+
+                <div class="sidebar-content">
+                    <div class="section-title">
+                        <ion-icon name="chevron-down-outline"></ion-icon>
+                        <span>CONFIG</span>
+                    </div>
+                    <div class="section-content">
+                        <div class="input-group">
+                            <label>SYNC SOURCE</label>
+                            <select id="triggerSource">
+                                <option value="midi">MIDI DATA (FILE)</option>
+                                <option value="audio">AUDIO ANALYSIS (AUTO)</option>
+                                <option value="manual">MANUAL SYNC (TAP)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group" id="sensitivity-group" style="display: none;">
+                            <label>ANALYSER SENSITIVITY</label>
+                            <input type="range" id="sensitivity" min="0" max="100" value="50">
+                        </div>
+
+                        <div id="manual-record-group" style="display: none; margin-top: 10px;">
+                            <button id="recordBtn" style="width: 100%; background: #c00;">START REC</button>
+                            <button id="tapBtn" class="hidden"
+                                style="width: 100%; height: 60px; font-size: 18px; background: #0c0; color: #000;">TAP!</button>
+                        </div>
+
+                        <div class="input-group">
+                            <label>EXECUTION STYLE</label>
+                            <select id="editMode">
+                                <option value="normal">Jump Cuts</option>
+                                <option value="overlap">Jump Cuts Stacking</option>
+                                <option value="random">Random Pop-up</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>SCALING</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="scaling" value="fill" checked> FILL</label>
+                                <label><input type="radio" name="scaling" value="keep"> ASPECT</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <ion-icon name="chevron-down-outline"></ion-icon>
+                        <span>ASSETS</span>
+                        <button id="clearAllBtn"
+                            style="margin-left: auto; background: transparent; border: none; color: #d11; font-size: 10px; cursor: pointer;">CLEAR
+                            ALL</button>
+                    </div>
+                    <div class="section-content">
+                        <div class="input-group" id="midi-input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>MIDI FILE</label>
+                                <ion-icon name="trash-outline" class="clear-asset" data-target="midiInput"
+                                    style="cursor: pointer; color: #858585;"></ion-icon>
+                            </div>
+                            <input type="file" id="midiInput" accept=".mid">
+                        </div>
+                        <div class="input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>AUDIO FILE</label>
+                                <ion-icon name="trash-outline" class="clear-asset" data-target="audioInput"
+                                    style="cursor: pointer; color: #858585;"></ion-icon>
+                            </div>
+                            <input type="file" id="audioInput" accept="audio/*">
+                        </div>
+                        <div class="input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>IMAGES</label>
+                                <ion-icon name="trash-outline" class="clear-asset" data-target="imageInput"
+                                    style="cursor: pointer; color: #858585;"></ion-icon>
+                            </div>
+                            <input type="file" id="imageInput" multiple accept="image/*">
+                        </div>
+                        <div class="input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>BACKGROUND VIDEO</label>
+                                <ion-icon name="trash-outline" class="clear-asset" data-target="videoInput"
+                                    style="cursor: pointer; color: #858585;"></ion-icon>
+                            </div>
+                            <input type="file" id="videoInput" accept="video/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT VIEW -->
+            <div id="text-view" class="sidebar-view">
+                <div class="sidebar-header">
+                    <span>TEXT MODE</span>
+                    <ion-icon name="ellipsis-horizontal"></ion-icon>
+                </div>
+                <div class="sidebar-content">
+                    <div class="section-content">
+                        <p class="description">Enter text to display on sync events.</p>
+                        <textarea id="textInput" placeholder="Enter lyrics or words here..."></textarea>
+
+                        <div class="input-group">
+                            <label>FONT FAMILY</label>
+                            <select id="fontFamily">
+                                <option value="Inter">Inter (Default)</option>
+                                <option value="Arial Narrow">Brat</option>
+                                <option value="JetBrains Mono">JetBrains Mono</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Brat">Helvetica</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Impact">Impact</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label>CUSTOM FONT</label>
+                                <ion-icon name="trash-outline" class="clear-asset" data-target="fontInput"
+                                    style="cursor: pointer; color: #858585;"></ion-icon>
+                            </div>
+                            <input type="file" id="fontInput" accept=".ttf, .otf, .woff, .woff2">
+                        </div>
+
+                        <div class="input-group">
+                            <label>FONT SIZE</label>
+                            <input type="range" id="fontSize" min="20" max="400" value="80">
+                        </div>
+
+                        <div class="input-group">
+                            <label>FONT COLOR</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" id="fontColor" value="#ffffff"
+                                    style="width: 50px; height: 30px; padding: 0; border: none;">
+                                <span style="font-size: 11px; color: #858585;">Select Color</span>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>SCREEN PADDING</label>
+                            <input type="range" id="textPadding" min="0" max="500" value="50">
+                        </div>
+
+
+
+                        <div class="input-group">
+                            <label>TEXT STYLE</label>
+                            <select id="textStyle">
+                                <option value="word">Single Word</option>
+                                <option value="paragraph">Paragraph</option>
+                                <option value="still">Still</option>
+                            </select>
+                        </div>
+
+                        <div id="paragraph-options" class="hidden"
+                            style="margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;">
+                            <div class="input-group">
+                                <label>SCREEN ALIGNMENT</label>
+                                <select id="textPosition">
+                                    <option value="center">Center</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>TEXT JUSTIFICATION</label>
+                                <select id="textAlign">
+                                    <option value="center">Center</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                    <option value="justify">Justify (Left)</option>
+                                    <option value="justify-center">Justify (Center)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="radio-group" style="padding-top: 5px;">
+                                <label><input type="checkbox" id="textOutline" checked> TEXT OUTLINE</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MAIN EDITOR AREA (Canvas) -->
+        <div class="editor-area">
+            <div class="tab-bar">
+                <div class="tab active">
+                    <ion-icon name="image-outline"></ion-icon>
+                    <span>Visualizer.preview</span>
+                    <ion-icon name="close-outline" class="close"></ion-icon>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="visualizer" width="1080" height="1980"></canvas>
+                    <canvas id="trail-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- 5. STATUS BAR -->
+        <!-- 5. STATUS BAR REMOVED -->
+    </div>
+
+    <!-- Hidden Audio Player -->
+    <audio id="audioPlayer"></audio>
+
+    <div id="processing-overlay" class="hidden">
+        <div class="processing-content">
+            <p>BUILDING SEQUENCE...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

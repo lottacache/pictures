@@ -33,10 +33,10 @@ class App {
             lastFontProps: '',
             imageStack: [], // { params, expiry, type, content }
             lastPeakTime: 0,
+            eraseTime: 2000,
         };
 
         this.constants = {
-            OVERLAP_DURATION: 2000,
             PEAK_COOLDOWN: 150
         };
 
@@ -71,6 +71,8 @@ class App {
                 fontInput: document.getElementById('fontInput'),
                 textOutline: document.getElementById('textOutline'),
                 sensitivity: document.getElementById('sensitivity'),
+                eraseTime: document.getElementById('eraseTime'),
+                eraseTimeValue: document.getElementById('eraseTimeValue'),
             },
             recordBtn: document.getElementById('recordBtn'),
             tapBtn: document.getElementById('tapBtn'),
@@ -155,8 +157,19 @@ class App {
             this.updateConfigVisibility();
         });
 
-        this.els.editModeSelect.addEventListener('change', (e) => this.state.editMode = e.target.value);
+        this.els.editModeSelect.addEventListener('change', (e) => {
+            this.state.editMode = e.target.value;
+            this.updateConfigVisibility();
+        });
         this.els.inputs.sensitivity.addEventListener('input', (e) => this.state.sensitivity = parseInt(e.target.value));
+
+        if (this.els.inputs.eraseTime) {
+            this.els.inputs.eraseTime.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                this.state.eraseTime = val;
+                if (this.els.inputs.eraseTimeValue) this.els.inputs.eraseTimeValue.textContent = val;
+            });
+        }
 
         this.els.scalingRadios.forEach(radio => {
             radio.addEventListener('change', (e) => this.state.scalingMode = e.target.value);
@@ -205,6 +218,11 @@ class App {
 
         const pOpts = document.getElementById('paragraph-options');
         if (pOpts) pOpts.style.display = (this.state.textStyle === 'paragraph' || this.state.textStyle === 'still') ? 'block' : 'none';
+
+        const eraseGroup = document.getElementById('erase-time-group');
+        if (eraseGroup) {
+            eraseGroup.style.display = (this.state.editMode === 'overlap' || this.state.editMode === 'random') ? 'block' : 'none';
+        }
     }
 
     clearAllAssets() {
@@ -555,7 +573,7 @@ class App {
                 type: 'image',
                 params: params,
                 expiry: (this.state.editMode === 'overlap' || this.state.editMode === 'random')
-                    ? now + this.constants.OVERLAP_DURATION
+                    ? now + this.state.eraseTime
                     : now + 999999999
             };
 
@@ -611,6 +629,28 @@ class App {
 
     async startManualRecord() {
         if (!this.els.audioPlayer.src) return;
+
+        // Countdown
+        const overlay = this.els.processingOverlay;
+        const text = overlay.querySelector('p');
+        const originalText = text.textContent;
+        overlay.classList.remove('hidden');
+
+        for (let i = 3; i > 0; i--) {
+            text.textContent = i.toString();
+            text.style.fontSize = '80px';
+            text.style.fontWeight = 'bold';
+            await new Promise(r => setTimeout(r, 600)); // slightly faster beat
+        }
+
+        text.textContent = "GO!";
+        await new Promise(r => setTimeout(r, 400));
+
+        overlay.classList.add('hidden');
+        text.style.fontSize = '';
+        text.style.fontWeight = '';
+        text.textContent = originalText;
+
         this.state.isRecording = true;
         this.state.isRunning = false;
         this.state.recordedTriggers = [];

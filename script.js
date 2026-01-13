@@ -29,6 +29,8 @@ class App {
             fontColor: '#ffffff',
             fontFamily: 'Inter',
             paragraphBuffer: [],
+            paragraphLines: [],
+            lastFontProps: '',
             imageStack: [], // { params, expiry, type, content }
             lastPeakTime: 0,
         };
@@ -335,25 +337,29 @@ class App {
     }
 
     updateParagraphBuffer(word) {
-        // Measure to see if we need to clear
-        // We need a context to measure, use main ctx
         const ctx = this.els.ctx;
         ctx.font = `bold ${this.state.fontSize}px "${this.state.fontFamily}", sans-serif`;
         const padding = this.state.textPadding;
         const maxWidth = WIDTH - (padding * 2);
-        const maxHeight = HEIGHT * 0.7; // 70% of screen height for paragraph
 
         // Create temp buffer with new word
         const nextBuffer = [...this.state.paragraphBuffer, word];
 
-        // Calculate height of this buffer
+        // Calculate lines for the potential new buffer
         const lines = this.calculateLines(ctx, nextBuffer, maxWidth);
 
         if (lines.length > 5) {
+            // Too long, reset
             this.state.paragraphBuffer = [word];
+            this.state.paragraphLines = this.calculateLines(ctx, [word], maxWidth);
         } else {
+            // Append
             this.state.paragraphBuffer.push(word);
+            this.state.paragraphLines = lines;
         }
+
+        // Mark current font props as valid for this cache
+        this.state.lastFontProps = [this.state.fontSize, this.state.fontFamily, this.state.textPadding].join(',');
     }
 
     calculateLines(ctx, words, maxWidth) {
@@ -393,7 +399,13 @@ class App {
         const maxWidth = WIDTH - (padding * 2);
         const lineHeight = this.state.fontSize * 1.4;
 
-        const lines = this.calculateLines(ctx, words, maxWidth);
+        // Check cache validity
+        const currentFontProps = [this.state.fontSize, this.state.fontFamily, this.state.textPadding].join(',');
+        if (currentFontProps !== this.state.lastFontProps || !this.state.paragraphLines) {
+            this.state.paragraphLines = this.calculateLines(ctx, words, maxWidth);
+            this.state.lastFontProps = currentFontProps;
+        }
+        const lines = this.state.paragraphLines;
         const totalHeight = lines.length * lineHeight;
 
         // Vertical Alignment: Center the block in the screen (or follow Screen Alignment vertically?)
@@ -514,17 +526,19 @@ class App {
         const hasImages = this.state.images.length > 0;
 
         if (hasText && this.state.textStyle !== 'still') {
+            // Prevent text stacking: clear any existing text items
+            this.state.imageStack = this.state.imageStack.filter(i => i.type !== 'text');
+
             const word = this.state.textData[this.state.textIndex % this.state.textData.length];
             newItem = {
                 type: 'text',
                 content: word,
-                expiry: this.state.editMode === 'overlap' ? now + this.constants.OVERLAP_DURATION : now + 999999999
+                expiry: now + 999999999
             };
             this.state.textIndex++;
 
             if (this.state.textStyle === 'paragraph') {
                 this.updateParagraphBuffer(word);
-                this.state.imageStack = this.state.imageStack.filter(i => i.type !== 'text');
             }
         }
         if (hasImages) {
